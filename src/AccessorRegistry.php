@@ -33,8 +33,13 @@ final class AccessorRegistry
         }
         $booted = true;
 
+        // Register default getter/setter resolvers for generic objects
         self::registerGetterResolver(new Resolver\ObjectGetterResolver());
         self::registerSetterResolver(new Resolver\ObjectSetterResolver());
+
+        // Register default getter/setter resolvers for stdClass
+        self::registerGetterResolver(new Resolver\StdClassGetterResolver());
+        self::registerSetterResolver(new Resolver\StdClassSetterResolver());
     }
 
     /**
@@ -53,11 +58,25 @@ final class AccessorRegistry
         array_unshift(self::$setterResolvers, $resolver);
     }
 
+    /**
+     * Get a map of getters for the given target.
+     *
+     * @param mixed             $target                  the target object or array to get the properties from
+     * @param array|string|null $propNames               optional specific property names to include in the map
+     * @param bool              $ignoreInaccessibleProps Whether to ignore properties that cannot be accessed.
+     *                                                   If false, an exception will be thrown when a property in $propNames is not accessible.
+     *
+     * @return array<string, \Closure> a map of property names to getter functions
+     *
+     * @throws \InvalidArgumentException if no resolver supports the target type
+     */
     public static function getGetterMap(
         mixed $target,
         array|string|null $propNames = null,
         bool $ignoreInaccessibleProps = true,
     ): array {
+        self::$getterResolvers or throw new \RuntimeException('No getter resolvers registered. Please boot before use!');
+
         foreach (self::$getterResolvers as $resolver) {
             if ($resolver->supports($target)) {
                 return $resolver->getGetterMap($target, $propNames, $ignoreInaccessibleProps);
@@ -72,6 +91,8 @@ final class AccessorRegistry
         array|string|null $propNames = null,
         bool $ignoreInaccessibleProps = true,
     ): array {
+        self::$getterResolvers or throw new \RuntimeException('No setter resolvers registered. Please boot before use!');
+
         foreach (self::$setterResolvers as $resolver) {
             if ($resolver->supports($target)) {
                 return $resolver->getSetterMap($target, $propNames, $ignoreInaccessibleProps);

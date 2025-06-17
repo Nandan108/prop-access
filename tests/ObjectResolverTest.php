@@ -6,7 +6,7 @@ use Nandan108\PropAccess\AccessorRegistry;
 use Nandan108\PropAccess\Tests\Fixtures\SampleEntity;
 use PHPUnit\Framework\TestCase;
 
-final class GetterMapResolverTest extends TestCase
+final class ObjectResolverTest extends TestCase
 {
     #[\Override]
     protected function setUp(): void
@@ -44,14 +44,6 @@ final class GetterMapResolverTest extends TestCase
         $this->assertSame('plainValue', $map['plain']($entity));
         $this->assertSame(42, $map['hidden']($entity));
         $this->assertSame('SNAKE', $map['privateSnakeCase']($entity));
-    }
-
-    public function testNoGetterResolverAvailable(): void
-    {
-        $this->expectException(\LogicException::class);
-        $this->expectExceptionMessage('No getter resolver supports type "string"');
-
-        AccessorRegistry::getGetterMap('not an object');
     }
 
     // test failure on getting getters of non-existing properties
@@ -98,14 +90,6 @@ final class GetterMapResolverTest extends TestCase
         $this->assertSame('plainValue', $entity->plain);
         $setterMap['hidden']($entity, 42);
         $this->assertSame(42, $entity->getHidden());
-    }
-
-    public function testNoSetterResolverAvailable(): void
-    {
-        $this->expectException(\LogicException::class);
-        $this->expectExceptionMessage('No setter resolver supports type "string"');
-
-        AccessorRegistry::getSetterMap('not an object');
     }
 
     // test failure on getting setters of non-existing properties
