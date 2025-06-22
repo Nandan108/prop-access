@@ -10,7 +10,10 @@ final class ObjectSetterResolver implements SetterMapResolverInterface
     #[\Override]
     public function supports(mixed $value): bool
     {
-        return is_object($value);
+        return is_object($value)
+            // SplObjectStorage and WeakMap are not supported because they use objects as keys
+            // and are very rarely used in queriable contexts (DTOs, config objects, API payloads, etc.)
+            && !($value instanceof \SplObjectStorage || $value instanceof \WeakMap);
     }
 
     /**

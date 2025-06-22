@@ -21,6 +21,7 @@ final class ObjectResolverTest extends TestCase
     {
         $entity = new SampleEntity();
 
+        /** @var array<string, \Closure(mixed): mixed> $map */
         $map = AccessorRegistry::getGetterMap($entity);
 
         $this->assertArrayHasKey('plain', $map);
@@ -32,7 +33,9 @@ final class ObjectResolverTest extends TestCase
 
         // property is public, but the getter's already there, so the key should not be duplicated
         $this->assertArrayNotHasKey('public_snake_case', $map);
+
         // however, a direct request for the public property should still work
+        /** @var array<string, \Closure(mixed): mixed> $directRequestMap */
         $directRequestMap = AccessorRegistry::getGetterMap($entity, ['public_snake_case']);
         $this->assertArrayHasKey('public_snake_case', $directRequestMap);
         $this->assertSame('snake', $directRequestMap['public_snake_case']($entity));
@@ -60,6 +63,7 @@ final class ObjectResolverTest extends TestCase
     {
         $entity = new SampleEntity();
 
+        /** @var array<string, \Closure(mixed, mixed): void> $setterMap */
         $setterMap = AccessorRegistry::getSetterMap($entity);
 
         $this->assertArrayHasKey('plain', $setterMap);
@@ -72,7 +76,9 @@ final class ObjectResolverTest extends TestCase
 
         // property is public, but the setter's already there, so the key should not be duplicated
         $this->assertArrayNotHasKey('public_snake_case', $setterMap);
+
         // however, a direct request for the public property should still work
+        /** @var array<string, \Closure(mixed, mixed): void> $directRequestMap */
         $directRequestMap = AccessorRegistry::getSetterMap($entity, ['public_snake_case']);
         $this->assertArrayHasKey('public_snake_case', $directRequestMap);
         $directRequestMap['public_snake_case']($entity, 'SNAKE');

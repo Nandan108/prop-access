@@ -22,6 +22,7 @@ final class StdClassResolverTest extends TestCase
             'public_snake_case' => 'snake',
         ];
 
+        /** @var array<string, \Closure(mixed): mixed> $map */
         $map = AccessorRegistry::getGetterMap($stdObj);
 
         $this->assertArrayHasKey('plain', $map);
@@ -30,6 +31,7 @@ final class StdClassResolverTest extends TestCase
         $this->assertArrayNotHasKey('privateSnakeCase', $map);
 
         // however, a direct request for the public property should still work
+        /** @var array<string, \Closure(mixed): mixed> $directRequestMap */
         $directRequestMap = AccessorRegistry::getGetterMap($stdObj, ['public_snake_case']);
         $this->assertArrayHasKey('public_snake_case', $directRequestMap);
         $this->assertSame('snake', $directRequestMap['public_snake_case']($stdObj));
@@ -43,6 +45,7 @@ final class StdClassResolverTest extends TestCase
             'public_snake_case' => 'snake',
         ];
 
+        /** @var array<string, \Closure(mixed, mixed): void> $map */
         $map = AccessorRegistry::getSetterMap($stdObj);
         foreach ($map as $key => $setter) {
             $setter($stdObj, "test-$key");
