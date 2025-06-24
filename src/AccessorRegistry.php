@@ -129,6 +129,49 @@ final class AccessorRegistry
     }
 
     /**
+     * Get a map of getters for the given value source, or a thrown exception if not supported.
+     *
+     * @param mixed             $valueSource             the object or array to get the properties from
+     * @param array|string|null $propNames               optional specific property names to include in the map
+     * @param bool              $ignoreInaccessibleProps whether to ignore properties that cannot be accessed
+     *
+     * @return array<string, \Closure(mixed): mixed> a map of property names to getter closures,
+     *                                               or null if $throwOnNotFound is false and no resolver supports the type
+     *
+     * @throws \InvalidArgumentException if no resolver supports the value source type
+     */
+    public static function getGetterMapOrThrow(
+        mixed $valueSource,
+        array|string|null $propNames = null,
+        bool $ignoreInaccessibleProps = true,
+    ): array {
+        /** @var array<string, \Closure(mixed): mixed> */
+        return self::getGetterMap($valueSource, $propNames, $ignoreInaccessibleProps, throwOnNotFound: true);
+    }
+
+    /**
+     * Get a map of setters for the given target, or throw an exception if not supported.
+     *
+     * @param mixed             $target                  the target object or array to get the properties from
+     * @param array|string|null $propNames               optional specific property names to include in the map
+     * @param bool              $ignoreInaccessibleProps Whether to ignore properties that cannot be accessed.
+     *                                                   If false, an exception will be thrown when a property in $propNames is not accessible.
+     *
+     * @return array<string, \Closure(mixed, mixed): void> a map of property names to setter closures,
+     *                                                     or null if no resolver supports the type
+     *
+     * @throws \InvalidArgumentException if no resolver supports the target type
+     */
+    public static function getSetterMapOrThrow(
+        mixed $target,
+        array|string|null $propNames = null,
+        bool $ignoreInaccessibleProps = true,
+    ): array {
+        /** @var array<string, \Closure(mixed, mixed): void> */
+        return self::getSetterMap($target, $propNames, $ignoreInaccessibleProps, throwOnNotFound: true);
+    }
+
+    /**
      * Get a map of resolved values for the given value source.
      */
     public static function getValueMap(

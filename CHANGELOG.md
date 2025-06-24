@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.0] – 2025-06-24
+
+### Added
+- `AccessorProxy` class: array-style, iterable, and countable wrapper for accessing properties via getters/setters
+- `AccessorRegistry::getValueMap()` – directly returns values from getter map
+- `AccessorRegistry::resolveValues()` – apply getter map to value source
+- `AccessorRegistry::canGetGetterMap()` and `canGetSetterMap()` – test accessor support without throwing
+
+### Changed
+- Updated README to document new utilities and `AccessorProxy`
+
+[0.3.0]: https://github.com/nandan108/prop-access/compare/v0.2.0...v0.3.0
+
+---
+
 ## [0.2.0] – 2025-06-22
 ### Added
 - `AccessorRegistry::getValueMap()` to directly extract resolved values from a value source

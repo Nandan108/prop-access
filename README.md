@@ -11,7 +11,7 @@ Provides getter and setter resolution via reflection, supporting both public pro
 Designed to be:
 
 * ✅ Framework-agnostic
-* 🔌 Easily extensible
+* 🔌 Easily extensible to support more object types
 
 ---
 
@@ -28,6 +28,7 @@ composer require nandan108/prop-access
 * 🧠 Default resolvers for public properties and `getProp()`/`setProp()` methods
 * 🧩 Pluggable resolver priority (later-registered resolvers are called first)
 * 🧼 `CaseConverter` utility for camelCase, snake\_case, kebab-case, etc.
+* 🧰 Convenience methods: `getValueMap()`, `resolveValues()`, `canGetGetterMap()`...
 
 ---
 
@@ -50,6 +51,36 @@ To resolve only specific properties:
 ```php
 $getters = AccessorRegistry::getGetterMap($myObj, ['foo_bar']);
 ```
+
+#### 🧰 Convenience Utilities
+
+**Quickly resolve values from a target object or array:**
+
+```php
+use Nandan108\PropAccess\AccessorRegistry;
+
+$values = AccessorRegistry::getValueMap($myDto);
+// → ['prop1' => 'value1', 'prop2' => 42, ...]
+```
+
+You can also resolve values from a previously obtained getter map:
+
+```php
+$getters = AccessorRegistry::getGetterMap($entity, ['foo', 'bar']);
+$values = AccessorRegistry::resolveValues($getters, $entity);
+```
+
+---
+
+**Check if accessors are supported for a given target:**
+
+```php
+if (AccessorRegistry::canGetGetterMap($target)) {
+    // Safe to call getGetterMap()
+}
+```
+
+These methods are especially useful when working with dynamic sources, fallbacks, or introspection-based tools.
 
 ---
 
@@ -110,6 +141,43 @@ You can also use the generic method:
 ```php
 CaseConverter::to('camel', 'foo_bar'); // Equivalent to toCamel()
 ```
+
+---
+
+### 🔍 AccessorProxy Helper
+
+Need array-style access to object properties? `AccessorProxy` wraps an object and exposes property access via `ArrayAccess`, `Traversable`, and `Countable`.
+
+```php
+use Nandan108\PropAccess\AccessorProxy;
+
+$proxy = AccessorProxy::getFor($user); // read-only by default
+
+echo $proxy['firstName'];      // -> $user->getFirstName()
+$proxy['lastName'] = 'Smith';  // throws LogicException (read-only)
+
+$rwProxy = AccessorProxy::GetFor($user, readOnly: false);
+$rwProxy['lastName'] = 'Smith'; // works if setLastName() or $lastName is available
+```
+
+Includes convenience methods:
+
+```php
+$proxy->toArray(); // ['firstName' => 'John', ...]
+$proxy->readableKeys();  // ['firstName', 'lastName', ...]
+$proxy->writeableKeys();
+```
+
+Use `AccessorProxy::getFor()` to fail gracefully:
+
+```php
+$proxy = AccessorProxy::getFor($target);
+if (!$proxy) {
+    // target does not support accessors
+}
+```
+
+📖 See [docs/AccessorProxy.md](docs/AccessorProxy.md) for full reference.
 
 ---
 
