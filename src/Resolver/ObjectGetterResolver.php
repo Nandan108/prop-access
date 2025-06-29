@@ -23,7 +23,7 @@ final class ObjectGetterResolver implements GetterMapResolverInterface
      *
      * @param bool $ignoreInaccessibleProps If false and no getter is found, an exception is thrown
      *
-     * @return array<string, \Closure(mixed): mixed> a map of property names to getter closures
+     * @return array<string, \Closure(object): mixed> a map of property names to getter closures
      *
      * @throws \LogicException
      */
@@ -33,12 +33,19 @@ final class ObjectGetterResolver implements GetterMapResolverInterface
         array|string|null $propNames = null,
         bool $ignoreInaccessibleProps = true,
     ): array {
-        /** @var object $valueSource */
+        /** @var array<array{
+         *    extra: array<string, \Closure(object): mixed>,
+         *    fullMap: array<string, \Closure(object): mixed>
+         * }>
+         * */
         static $getterCache = []; // [className => ['full' => [...], 'extra' => [...]]]
+
+        /** @var object $valueSource */
         $entityClass = $valueSource::class;
 
         if (!isset($getterCache[$entityClass])) {
             $entityReflection = new \ReflectionClass($valueSource);
+            /** @var array<string, \Closure(object): mixed> */
             $canonicalMap = [];
             $extra = [];
 
@@ -84,10 +91,14 @@ final class ObjectGetterResolver implements GetterMapResolverInterface
         if (null === $propNames) {
             return $canonicalMap;
         }
+        if (is_string($propNames)) {
+            $propNames = [$propNames];
+        }
 
         $map = [];
         $missingProps = [];
-        foreach ((array) $propNames as $name) {
+        /** @var string $name */
+        foreach ($propNames as $name) {
             $accessor = $canonicalMap[$name] ?? $extra[$name] ?? null;
             if ($accessor) {
                 $map[$name] = $accessor;
@@ -108,9 +119,8 @@ final class ObjectGetterResolver implements GetterMapResolverInterface
      */
     private static function makeMethodGetter(string $methodName): \Closure
     {
-        return static function (object $entity) use ($methodName): mixed {
-            return $entity->$methodName();
-        };
+        /** @psalm-suppress MixedMethodCall */
+        return fn (object $entity) => $entity->$methodName();
     }
 
     /**

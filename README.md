@@ -23,7 +23,7 @@ composer require nandan108/prop-access
 
 ---
 
-### 🔧 Features
+### 🔧 Features <a id="features"></a>
 
 * 🧠 Default resolvers for public properties and `getProp()`/`setProp()` methods
 * 🧩 Pluggable resolver priority (later-registered resolvers are called first)
@@ -37,37 +37,37 @@ composer require nandan108/prop-access
 Accessor maps are **cached by class name**, so the returned closures are **stateless** and require the target object to be passed as an argument:
 
 ```php
-use Nandan108\PropAccess\AccessorRegistry;
+use Nandan108\PropAccess\PropAccess;
 
-$getterMap = AccessorRegistry::getGetterMap($myObj);
+$getterMap = PropAccess::getGetterMap($myObj);
 $value = $getterMap['propertyName']($myObj);
 
-$setterMap = AccessorRegistry::getSetterMap($myObj);
+$setterMap = PropAccess::getSetterMap($myObj);
 $setterMap['propertyName']($myObj, $newValue);
 ```
 
 To resolve only specific properties:
 
 ```php
-$getters = AccessorRegistry::getGetterMap($myObj, ['foo_bar']);
+$getters = PropAccess::getGetterMap($myObj, ['foo_bar']);
 ```
 
 #### 🧰 Convenience Utilities
 
-**Quickly resolve values from a target object or array:**
+**Quickly resolve values from a target object:**
 
 ```php
-use Nandan108\PropAccess\AccessorRegistry;
+use Nandan108\PropAccess\PropAccess;
 
-$values = AccessorRegistry::getValueMap($myDto);
+$values = PropAccess::getValueMap($myDto);
 // → ['prop1' => 'value1', 'prop2' => 42, ...]
 ```
 
 You can also resolve values from a previously obtained getter map:
 
 ```php
-$getters = AccessorRegistry::getGetterMap($entity, ['foo', 'bar']);
-$values = AccessorRegistry::resolveValues($getters, $entity);
+$getters = PropAccess::getGetterMap($entity, ['foo', 'bar']);
+$values = PropAccess::resolveValues($getters, $entity);
 ```
 
 ---
@@ -75,7 +75,7 @@ $values = AccessorRegistry::resolveValues($getters, $entity);
 **Check if accessors are supported for a given target:**
 
 ```php
-if (AccessorRegistry::canGetGetterMap($target)) {
+if (PropAccess::canGetGetterMap($target)) {
     // Safe to call getGetterMap()
 }
 ```
@@ -92,7 +92,7 @@ You can call `getGetterMap()` / `getSetterMap()` in two ways:
    Returns a full canonical map using camelCase keys. If both a public property (e.g. `my_prop`) and a corresponding getter (`getMyProp()`) exist, **only the getter will be included** to avoid duplication and ensure value transformation logic is preserved.
 
    ```php
-   $map = AccessorRegistry::getGetterMap($entity);
+   $map = PropAccess::getGetterMap($entity);
    $map['myProp']($entity); // uses getMyProp(), not $entity->my_prop
    ```
 
@@ -103,7 +103,7 @@ You can call `getGetterMap()` / `getSetterMap()` in two ways:
    * `fooBar` → accesses the getter/setter method (if available)
 
    ```php
-   [$directSetter, $indirectSetter] = AccessorRegistry::getSetterMap($myObj, ['foo_bar', 'fooBar']);
+   [$directSetter, $indirectSetter] = PropAccess::getSetterMap($myObj, ['foo_bar', 'fooBar']);
 
    $directSetter($myObj, 'A');   // -> $myObj->foo_bar = 'A';
    $indirectSetter($myObj, 'B'); // -> $myObj->setFooBar('B');
@@ -116,17 +116,17 @@ You can call `getGetterMap()` / `getSetterMap()` in two ways:
 Resolvers can be registered to override or extend behavior:
 
 ```php
-AccessorRegistry::bootDefaultResolvers(); // Registers built-in property/method resolvers
+PropAccess::bootDefaultResolvers(); // Registers built-in property/method resolvers
 
-AccessorRegistry::registerGetterResolver(new MyCustomGetterResolver());
-AccessorRegistry::registerSetterResolver(new MyCustomSetterResolver());
+PropAccess::registerGetterResolver(new MyCustomGetterResolver());
+PropAccess::registerSetterResolver(new MyCustomSetterResolver());
 ```
 
 Later-registered resolvers are tried first. If `->supports($object)` returns false, fallback continues down the chain.
 
 ---
 
-### 🧬 CaseConverter Utility
+### 🧬 CaseConverter Utility <a id="caseconverter-utility"></a>
 
 ```php
 CaseConverter::toCamel('user_name');     // "userName"
@@ -184,7 +184,7 @@ if (!$proxy) {
 ### ✅ Quality
 
 * ✅ 100% test coverage
-* ✅ Psalm clean
+* ✅ Psalm level 1
 * ✅ Zero dependencies
 
 ---

@@ -6,11 +6,27 @@ namespace Nandan108\PropAccess;
  * @template-implements \ArrayAccess<array-key, mixed>
  * @template-implements \IteratorAggregate<array-key, mixed>
  */
-final class AccessorProxy implements \ArrayAccess, \IteratorAggregate, \Countable
+final class AccessProxy implements \ArrayAccess, \IteratorAggregate, \Countable
 {
+    /**
+     * A map of property names to getter closures.
+     *
+     * @var array<array-key, \Closure(mixed): mixed>
+     */
     private array $getterMap;
+
+    /**
+     * A map of property names to setter closures.
+     *
+     * @var ?array<array-key, \Closure(mixed, mixed): void>
+     */
     private ?array $setterMap = null;
 
+    /**
+     * @param ?array<array-key, \Closure(mixed): mixed>       $getterMap
+     * @param ?array<array-key, \Closure(mixed, mixed): void> $setterMap
+     * @param ?list<array-key>                                $propNames
+     */
     public function __construct(
         private object $target,
         ?array $propNames = null,
@@ -18,39 +34,40 @@ final class AccessorProxy implements \ArrayAccess, \IteratorAggregate, \Countabl
         ?array $getterMap = null,
         ?array $setterMap = null,
     ) {
-        $this->getterMap = $getterMap ?? AccessorRegistry::getGetterMapOrThrow($target, $propNames);
+        PropAccess::bootDefaultResolvers();
+
+        $this->getterMap = $getterMap ?? PropAccess::getGetterMapOrThrow($target, $propNames);
+
         if (!$this->readOnly) {
-            $this->setterMap = $setterMap ?? AccessorRegistry::getSetterMapOrThrow($target, $propNames);
+            $this->setterMap = $setterMap ?? PropAccess::getSetterMapOrThrow($target, $propNames);
         }
     }
 
     /**
      * Creates an AccessorProxy for the given target object.
      *
-     * @param mixed $propNames
+     * @param ?list<array-key> $propNames
      */
     public static function getFor(
         object $target,
         ?array $propNames = null,
         bool $readOnly = true,
         bool $throwOnFailure = false,
-    ): ?AccessorProxy {
-        AccessorRegistry::bootDefaultResolvers();
+    ): ?AccessProxy {
+        PropAccess::bootDefaultResolvers();
 
         if ($throwOnFailure) {
             return new self($target, $propNames, $readOnly);
         }
 
-        $getterMap = AccessorRegistry::getGetterMap($target, $propNames, throwOnNotFound: false);
+        $getterMap = PropAccess::getGetterMap($target, $propNames, throwOnNotFound: false);
         $valid = (bool) $getterMap;
 
         $setterMap = null;
         if ($valid && !$readOnly) {
-            $setterMap = AccessorRegistry::getSetterMap($target, $propNames, throwOnNotFound: false);
+            $setterMap = PropAccess::getSetterMap($target, $propNames, throwOnNotFound: false);
             $valid = null !== $setterMap;
         }
-
-        /** @var ?array $propNames */
 
         return $valid
             ? new self($target, $propNames, $readOnly, $getterMap, $setterMap)
@@ -68,7 +85,7 @@ final class AccessorProxy implements \ArrayAccess, \IteratorAggregate, \Countabl
     /**
      * Returns the getter map of this proxy.
      *
-     * @return array<string, \Closure(mixed): mixed> a map of property names to getter closures
+     * @return array<array-key, \Closure(mixed): mixed> a map of property names to getter closures
      */
     public function getGetters(): array
     {
@@ -78,7 +95,7 @@ final class AccessorProxy implements \ArrayAccess, \IteratorAggregate, \Countabl
     /**
      * Returns the setter map of this proxy.
      *
-     * @return array<string, \Closure(mixed, mixed): void> a map of property names to setter closures
+     * @return array<array-key, \Closure(mixed, mixed): void> a map of property names to setter closures
      *
      * @throws \LogicException if this proxy was created in read-only mode
      */
@@ -94,7 +111,6 @@ final class AccessorProxy implements \ArrayAccess, \IteratorAggregate, \Countabl
     #[\Override]
     public function offsetGet(mixed $offset): mixed
     {
-        /** @var ?\Closure(mixed): mixed $getter */
         $getter = $this->getterMap[(string) $offset] ?? null;
         if (null === $getter) {
             throw new \LogicException(sprintf('No getter found for "%s" in %s', $offset, get_debug_type($this->target)));
@@ -110,7 +126,6 @@ final class AccessorProxy implements \ArrayAccess, \IteratorAggregate, \Countabl
             throw new \LogicException('Cannot write via a read-only proxy.');
         }
         $offset = (string) $offset;
-        /** @var ?\Closure(mixed, mixed): void $setter */
         $setter = $this->setterMap[$offset] ?? null;
         if (null === $setter) {
             throw new \LogicException(sprintf('No setter found for "%s" in %s', $offset, get_debug_type($this->target)));
@@ -147,6 +162,11 @@ final class AccessorProxy implements \ArrayAccess, \IteratorAggregate, \Countabl
         }
     }
 
+    /**
+     * Returns an iterator over the readable properties in this proxy.
+     *
+     * @return \Traversable<array-key, mixed> an iterator yielding property names and their values
+     */
     #[\Override]
     public function getIterator(): \Traversable
     {
@@ -164,7 +184,7 @@ final class AccessorProxy implements \ArrayAccess, \IteratorAggregate, \Countabl
     /**
      * Returns the keys of the readable properties in this proxy.
      *
-     * @return array<string> the keys of the readable properties
+     * @return array<array-key> the keys of the readable properties
      */
     public function readableKeys(): array
     {
@@ -176,7 +196,7 @@ final class AccessorProxy implements \ArrayAccess, \IteratorAggregate, \Countabl
      *
      * If the proxy is read-only, this will return an empty array.
      *
-     * @return array<string> the keys of the writable properties
+     * @return array<array-key> the keys of the writable properties
      */
     public function writableKeys(): array
     {
@@ -185,11 +205,10 @@ final class AccessorProxy implements \ArrayAccess, \IteratorAggregate, \Countabl
 
     /**
      * Returns the values of the readable properties in this proxy.
-     *
-     * @return array<mixed> the values of the readable properties
+     * Fails silently and returns an empty array if no getters are found or the target is not accessible.
      */
     public function toArray(): array
     {
-        return AccessorRegistry::resolveValues($this->getterMap, $this->target);
+        return PropAccess::resolveValues($this->getterMap, $this->target);
     }
 }

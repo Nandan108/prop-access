@@ -28,6 +28,7 @@ final class CaseConverter
 
         // Step 2.b: apply transformations
         foreach ($transforms as $fn) {
+            /** @var array<string> */
             $words = array_map($fn, $words);
         }
 
@@ -100,8 +101,8 @@ final class CaseConverter
     /**
      * Converts a string to a specified case format.
      *
-     * @param mixed $case one of 'camel', 'pascal', 'snake', 'kebab', 'upper_snake'
-     * @param mixed $str  the string to convert
+     * @param string $case one of 'camel', 'pascal', 'snake', 'kebab', 'upper_snake'
+     * @param string $str  the string to convert
      *
      * @throws \InvalidArgumentException if the case is unknown
      *

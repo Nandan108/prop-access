@@ -2,8 +2,8 @@
 
 namespace Nandan108\PropAccess\Tests;
 
-use Nandan108\PropAccess\AccessorProxy;
-use Nandan108\PropAccess\AccessorRegistry;
+use Nandan108\PropAccess\AccessProxy;
+use Nandan108\PropAccess\PropAccess;
 use PHPUnit\Framework\TestCase;
 
 final class AccessorProxyTest extends TestCase
@@ -15,9 +15,9 @@ final class AccessorProxyTest extends TestCase
             public int $age = 30;
         };
 
-        AccessorRegistry::bootDefaultResolvers();
+        PropAccess::bootDefaultResolvers();
 
-        $proxy = new AccessorProxy($obj, readOnly: false);
+        $proxy = new AccessProxy($obj, readOnly: false);
 
         $this->assertSame('John', $proxy['name']);
         $this->assertSame(30, $proxy['age']);
@@ -37,7 +37,7 @@ final class AccessorProxyTest extends TestCase
             public string $foo = 'bar';
         };
 
-        $proxy = new AccessorProxy($obj);
+        $proxy = new AccessProxy($obj);
 
         $this->assertTrue(isset($proxy['foo']));
         $this->assertFalse(isset($proxy['baz']));
@@ -45,13 +45,13 @@ final class AccessorProxyTest extends TestCase
 
     public function testOffsetUnset(): void
     {
-        AccessorRegistry::bootDefaultResolvers();
+        PropAccess::bootDefaultResolvers();
         $obj = new class {
             public string $foo = 'bar';
             public string $baz = 'qux';
         };
 
-        $proxy = new AccessorProxy($obj, readOnly: false);
+        $proxy = new AccessProxy($obj, readOnly: false);
         $proxy->removeAccessors(['baz']);
 
         $this->assertTrue(isset($proxy['foo']));
@@ -70,7 +70,7 @@ final class AccessorProxyTest extends TestCase
             public string $baz = 'qux';
         };
 
-        $proxy = new AccessorProxy($obj);
+        $proxy = new AccessProxy($obj);
         $this->assertCount(2, $proxy);
     }
 
@@ -81,10 +81,13 @@ final class AccessorProxyTest extends TestCase
             public string $b = 'y';
         };
 
-        $proxy = new AccessorProxy($obj);
+        $proxy = new AccessProxy($obj);
+
         $result = [];
 
+        /** @psalm-var mixed $value */
         foreach ($proxy as $key => $value) {
+            /** @psalm-suppress MixedAssignment */
             $result[$key] = $value;
         }
 
@@ -98,8 +101,8 @@ final class AccessorProxyTest extends TestCase
             public string $b = 'y';
         };
 
-        $proxy = AccessorProxy::getFor($obj, readOnly: false);
-        $this->assertInstanceOf(AccessorProxy::class, $proxy);
+        $proxy = AccessProxy::getFor($obj, readOnly: false);
+        $this->assertInstanceOf(AccessProxy::class, $proxy);
         $this->assertSame(['a', 'b'], $proxy->readableKeys());
         $this->assertSame(['a', 'b'], $proxy->writableKeys());
         $this->assertSame(['a' => 'x', 'b' => 'y'], $proxy->toArray());
@@ -117,14 +120,14 @@ final class AccessorProxyTest extends TestCase
             public string $prop = 'val';
         };
 
-        $proxy = AccessorProxy::getFor($obj);
-        $this->assertInstanceOf(AccessorProxy::class, $proxy);
+        $proxy = AccessProxy::getFor($obj);
+        $this->assertInstanceOf(AccessProxy::class, $proxy);
         $this->assertSame('val', $proxy['prop']);
     }
 
     public function testGetForFailure(): void
     {
-        $proxy = AccessorProxy::getFor(new \SplObjectStorage());
+        $proxy = AccessProxy::getFor(new \SplObjectStorage());
         $this->assertNull($proxy);
 
         // test getFor() trying to access a non-existing property
@@ -132,7 +135,7 @@ final class AccessorProxyTest extends TestCase
             public string $foo = 'val';
         };
 
-        $proxy = AccessorProxy::getFor($obj, ['bar'], throwOnFailure: false);
+        $proxy = AccessProxy::getFor($obj, ['bar'], throwOnFailure: false);
         $this->assertNull($proxy);
     }
 
@@ -142,7 +145,7 @@ final class AccessorProxyTest extends TestCase
         $this->expectException(\LogicException::class);
         $this->expectExceptionMessage('No getter resolver supports type "SplObjectStorage"');
 
-        AccessorProxy::getFor(new \SplObjectStorage(), ['nonexistent'], throwOnFailure: true);
+        AccessProxy::getFor(new \SplObjectStorage(), ['nonexistent'], throwOnFailure: true);
     }
 
     // test getFor() with $readonly = false
@@ -152,8 +155,8 @@ final class AccessorProxyTest extends TestCase
             public string $prop = 'value';
         };
 
-        $proxy = AccessorProxy::getFor($obj, readOnly: false);
-        $this->assertInstanceOf(AccessorProxy::class, $proxy);
+        $proxy = AccessProxy::getFor($obj, readOnly: false);
+        $this->assertInstanceOf(AccessProxy::class, $proxy);
         $this->assertSame('value', $proxy['prop']);
 
         // Test setting a value
@@ -171,8 +174,8 @@ final class AccessorProxyTest extends TestCase
             public string $prop = 'value';
         };
 
-        $proxy = AccessorProxy::getFor($obj);
-        $this->assertInstanceOf(AccessorProxy::class, $proxy);
+        $proxy = AccessProxy::getFor($obj);
+        $this->assertInstanceOf(AccessProxy::class, $proxy);
         $proxy->getSetters();
     }
 
@@ -184,8 +187,8 @@ final class AccessorProxyTest extends TestCase
             public string $prop = 'value';
         };
 
-        $proxy = AccessorProxy::getFor($obj, readOnly: false);
-        $this->assertInstanceOf(AccessorProxy::class, $proxy);
+        $proxy = AccessProxy::getFor($obj, readOnly: false);
+        $this->assertInstanceOf(AccessProxy::class, $proxy);
 
         $setters = $proxy->getSetters();
         $this->assertArrayHasKey('prop', $setters);
@@ -204,8 +207,8 @@ final class AccessorProxyTest extends TestCase
         $obj = new class {
             public string $foo = 'bar';
         };
-        $proxy = AccessorProxy::getFor($obj);
-        $this->assertInstanceOf(AccessorProxy::class, $proxy);
+        $proxy = AccessProxy::getFor($obj);
+        $this->assertInstanceOf(AccessProxy::class, $proxy);
         $proxy['nonexistent'];
     }
 
@@ -218,8 +221,8 @@ final class AccessorProxyTest extends TestCase
         $obj = new class {
             public string $prop = 'value';
         };
-        $proxy = AccessorProxy::getFor($obj);
-        $this->assertInstanceOf(AccessorProxy::class, $proxy);
+        $proxy = AccessProxy::getFor($obj);
+        $this->assertInstanceOf(AccessProxy::class, $proxy);
         $proxy['prop'] = 'value';
     }
 
@@ -232,8 +235,8 @@ final class AccessorProxyTest extends TestCase
         $obj = new class {
             public string $foo = 'bar';
         };
-        $proxy = AccessorProxy::getFor($obj, readOnly: false);
-        $this->assertInstanceOf(AccessorProxy::class, $proxy);
+        $proxy = AccessProxy::getFor($obj, readOnly: false);
+        $this->assertInstanceOf(AccessProxy::class, $proxy);
         $proxy['nonexistent'] = 'value';
     }
 }

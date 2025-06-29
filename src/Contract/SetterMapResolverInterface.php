@@ -7,7 +7,9 @@ interface SetterMapResolverInterface
     public function supports(mixed $value): bool;
 
     /**
-     * @return array<string, \Closure(mixed, mixed): void>
+     * @param array<array-key>|string|null $propNames
+     *
+     * @return array<array-key, \Closure(mixed, mixed): void>
      */
     public function getSetterMap(
         mixed $target,

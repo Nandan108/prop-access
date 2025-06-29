@@ -7,7 +7,11 @@ interface GetterMapResolverInterface
     public function supports(mixed $value): bool;
 
     /**
-     * @return array<string, \Closure(mixed): mixed>
+     * Get the per-property list of getters defined for the given entity.
+     *
+     * @param array<array-key>|string|null $propNames
+     *
+     * @return array<array-key, \Closure(mixed): mixed>
      */
     public function getGetterMap(
         mixed $valueSource,

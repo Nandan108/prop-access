@@ -12,12 +12,22 @@ final class StdClassGetterResolver implements GetterMapResolverInterface
         return $value instanceof \stdClass;
     }
 
+    /**
+     * Get the per-property list of getters defined for the given \stdClass object.
+     *
+     * @param array<array-key>|string|null $propNames
+     *
+     * @return array<array-key, \Closure(mixed): mixed>
+     *
+     * @throws \LogicException
+     */
     #[\Override]
     public function getGetterMap(
         mixed $valueSource,
         array|string|null $propNames = null,
         bool $ignoreInaccessibleProps = true,
     ): array {
+        /** @var \stdClass $valueSource */
         $vars = get_object_vars($valueSource);
 
         if (null !== $propNames) {

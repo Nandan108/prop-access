@@ -19,7 +19,7 @@ final class ObjectSetterResolver implements SetterMapResolverInterface
     /**
      * Get a map of closure setters for the given properties.
      *
-     * @return array<string, \Closure(mixed, mixed): void>
+     * @return array<array-key, \Closure(mixed, mixed): void>
      *
      * @throws \LogicException
      */
@@ -29,8 +29,14 @@ final class ObjectSetterResolver implements SetterMapResolverInterface
         array|string|null $propNames = null,
         bool $ignoreInaccessibleProps = true,
     ): array {
-        /** @var object $target */
+        /** @var array<array{
+         *    extra: array<array-key, \Closure(object, mixed): void>,
+         *    fullMap: array<array-key, \Closure(object, mixed): void>
+         * }>
+         */
         static $setterCache = []; // [className => ['full' => [...], 'extra' => [...]]]
+
+        /** @var object $target */
         $entityClass = $target::class;
 
         if (!isset($setterCache[$entityClass])) {
@@ -80,6 +86,7 @@ final class ObjectSetterResolver implements SetterMapResolverInterface
 
         $map = [];
         $missingProps = [];
+        /** @var string $name */
         foreach ((array) $propNames as $name) {
             $accessor = $canonicalMap[$name] ?? $extra[$name] ?? null;
             if ($accessor) {
@@ -97,11 +104,16 @@ final class ObjectSetterResolver implements SetterMapResolverInterface
     }
 
     /**
+     * @param array-key $methodName
+     *
      * @return \Closure(object, mixed): void
      */
     private static function makeMethodSetter(string $methodName): \Closure
     {
+        $methodName = (string) $methodName;
+
         return static function (object $entity, mixed $value) use ($methodName): void {
+            /** @psalm-suppress MixedMethodCall */
             $entity->$methodName($value);
         };
     }

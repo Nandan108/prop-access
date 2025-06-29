@@ -2,7 +2,7 @@
 
 `AccessorProxy` is a utility wrapper that makes it easy to **traverse**, **read**, and optionally **write** properties on an object using array-style access and iteration.
 
-It uses `AccessorRegistry` internally to resolve getters and setters.
+It uses `PropAccess` internally to resolve getters and setters.
 
 ```php
 $proxy = AccessorProxy::getFor($user, readOnly: false);
@@ -120,8 +120,8 @@ $proxy['name'] = 'Jane';
 
 ## 🔗 Related
 
-* [`AccessorRegistry`](./README.md#🔧-features) – the underlying accessor map manager
-* [`CaseConverter`](./README.md#🧬-caseconverter-utility)
+* [`PropAccess`](../README.md#features) – the underlying accessor map manager
+* [`CaseConverter`](../README.md#caseconverter-utility)
 
 ---
 
