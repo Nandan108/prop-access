@@ -3,6 +3,7 @@
 namespace Nandan108\PropAccess\Resolver;
 
 use Nandan108\PropAccess\Contract\SetterMapResolverInterface;
+use Nandan108\PropAccess\Exception\AccessorException;
 use Nandan108\PropAccess\Support\CaseConverter;
 
 final class ObjectSetterResolver implements SetterMapResolverInterface
@@ -97,7 +98,7 @@ final class ObjectSetterResolver implements SetterMapResolverInterface
         }
 
         if ($missingProps && !$ignoreInaccessibleProps) {
-            throw new \LogicException('No public setter or property found for: '.implode(', ', $missingProps).' in '.$entityClass);
+            throw new AccessorException('No public setter or property found for: '.implode(', ', $missingProps).' in '.$entityClass);
         }
 
         return $map;

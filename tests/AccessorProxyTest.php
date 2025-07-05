@@ -3,6 +3,7 @@
 namespace Nandan108\PropAccess\Tests;
 
 use Nandan108\PropAccess\AccessProxy;
+use Nandan108\PropAccess\Exception\AccessorException;
 use Nandan108\PropAccess\PropAccess;
 use PHPUnit\Framework\TestCase;
 
@@ -201,7 +202,7 @@ final class AccessorProxyTest extends TestCase
     // test offsetGet() for invalid property (throws \LogicException("No getter found for \"$offset\" in ".get_debug_type($target)))
     public function testOffsetGetInvalidProperty(): void
     {
-        $this->expectException(\LogicException::class);
+        $this->expectException(AccessorException::class);
         $this->expectExceptionMessage('No getter found for "nonexistent" in class@anonymous');
 
         $obj = new class {
@@ -229,7 +230,7 @@ final class AccessorProxyTest extends TestCase
     // test offsetSet() on writable proxy but invalid property (throws \LogicException("No setter found for \"$offset\" in ".get_debug_type($target)))
     public function testOffsetSetInvalidProperty(): void
     {
-        $this->expectException(\LogicException::class);
+        $this->expectException(AccessorException::class);
         $this->expectExceptionMessage('No setter found for "nonexistent" in class@anonymous');
 
         $obj = new class {

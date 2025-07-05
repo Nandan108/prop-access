@@ -3,6 +3,7 @@
 namespace Nandan108\PropAccess\Resolver;
 
 use Nandan108\PropAccess\Contract\GetterMapResolverInterface;
+use Nandan108\PropAccess\Exception\AccessorException;
 use Nandan108\PropAccess\Support\CaseConverter;
 
 final class ObjectGetterResolver implements GetterMapResolverInterface
@@ -108,7 +109,7 @@ final class ObjectGetterResolver implements GetterMapResolverInterface
         }
 
         if ($missingProps && !$ignoreInaccessibleProps) {
-            throw new \LogicException('No public getter or property found for: '.implode(', ', $missingProps).' in '.$entityClass);
+            throw new AccessorException('No public getter or property found for: '.implode(', ', $missingProps).' in '.$entityClass);
         }
 
         return $map;

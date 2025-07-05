@@ -2,6 +2,7 @@
 
 namespace Nandan108\PropAccess\Tests;
 
+use Nandan108\PropAccess\Exception\AccessorException;
 use Nandan108\PropAccess\PropAccess;
 use PHPUnit\Framework\TestCase;
 
@@ -60,7 +61,7 @@ final class StdClassResolverTest extends TestCase
 
     public function testStdClassGetterForNonExistingProperty(): void
     {
-        $this->expectException(\LogicException::class);
+        $this->expectException(AccessorException::class);
         $this->expectExceptionMessage('One or more property not found in \StdClass object: baz, qux');
 
         $entity = (object) ['foo' => 1, 'bar' => 42];

@@ -2,6 +2,7 @@
 
 namespace Nandan108\PropAccess\Tests;
 
+use Nandan108\PropAccess\Exception\AccessorException;
 use Nandan108\PropAccess\PropAccess;
 use Nandan108\PropAccess\Tests\Fixtures\SampleEntity;
 use PHPUnit\Framework\TestCase;
@@ -55,7 +56,7 @@ final class ObjectResolverTest extends TestCase
     // test failure on getting getters of non-existing properties
     public function testGetterForNonExistingProperty(): void
     {
-        $this->expectException(\LogicException::class);
+        $this->expectException(AccessorException::class);
         $this->expectExceptionMessage('No public getter or property found for: nonExisting, missingProperty in Nandan108\PropAccess\Tests\Fixtures\SampleEntity');
 
         $entity = new SampleEntity();
@@ -104,7 +105,7 @@ final class ObjectResolverTest extends TestCase
     // test failure on getting setters of non-existing properties
     public function testSetterForNonExistingProperty(): void
     {
-        $this->expectException(\LogicException::class);
+        $this->expectException(AccessorException::class);
         $this->expectExceptionMessage('No public setter or property found for: nonExisting, missingProperty in Nandan108\PropAccess\Tests\Fixtures\SampleEntity');
 
         $entity = new SampleEntity();

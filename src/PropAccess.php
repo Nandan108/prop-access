@@ -157,8 +157,7 @@ final class PropAccess
      * @param bool                         $ignoreInaccessibleProps Whether to ignore properties that cannot be accessed.
      *                                                              If false, an exception will be thrown when a property in $propNames is not accessible.
      *
-     * @return array<array-key, \Closure(mixed, mixed): void> a map of property names to setter closures,
-     *                                                        or null if no resolver supports the type
+     * @return array<array-key, \Closure(mixed, mixed): void> a map of property names to setter closures
      *
      * @throws \InvalidArgumentException if no resolver supports the target type
      */

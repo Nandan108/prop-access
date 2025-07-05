@@ -3,6 +3,7 @@
 namespace Nandan108\PropAccess\Resolver;
 
 use Nandan108\PropAccess\Contract\GetterMapResolverInterface;
+use Nandan108\PropAccess\Exception\AccessorException;
 
 final class StdClassGetterResolver implements GetterMapResolverInterface
 {
@@ -35,7 +36,7 @@ final class StdClassGetterResolver implements GetterMapResolverInterface
             $vars = array_intersect_key($vars, array_flip($propNames));
             $missingProps = array_diff($propNames, array_keys($vars));
             if (count($vars) < count($propNames) && !$ignoreInaccessibleProps) {
-                throw new \LogicException('One or more property not found in \StdClass object: '.implode(', ', $missingProps));
+                throw new AccessorException('One or more property not found in \StdClass object: '.implode(', ', $missingProps));
             }
         }
 

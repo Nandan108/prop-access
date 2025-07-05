@@ -2,6 +2,8 @@
 
 namespace Nandan108\PropAccess;
 
+use Nandan108\PropAccess\Exception\AccessorException;
+
 /**
  * @template-implements \ArrayAccess<array-key, mixed>
  * @template-implements \IteratorAggregate<array-key, mixed>
@@ -113,7 +115,7 @@ final class AccessProxy implements \ArrayAccess, \IteratorAggregate, \Countable
     {
         $getter = $this->getterMap[(string) $offset] ?? null;
         if (null === $getter) {
-            throw new \LogicException(sprintf('No getter found for "%s" in %s', $offset, get_debug_type($this->target)));
+            throw new AccessorException(sprintf('No getter found for "%s" in %s', $offset, get_debug_type($this->target)));
         }
 
         return $getter($this->target);
@@ -128,7 +130,7 @@ final class AccessProxy implements \ArrayAccess, \IteratorAggregate, \Countable
         $offset = (string) $offset;
         $setter = $this->setterMap[$offset] ?? null;
         if (null === $setter) {
-            throw new \LogicException(sprintf('No setter found for "%s" in %s', $offset, get_debug_type($this->target)));
+            throw new AccessorException(sprintf('No setter found for "%s" in %s', $offset, get_debug_type($this->target)));
         }
         $setter($this->target, $value);
     }
